@@ -91,9 +91,9 @@ if zdtPyApi.zdtConf != '':
 print(" ")
 if hasattr(__builtins__, 'raw_input'):
     input=raw_input  # @UndefinedVariable
-confCreate = input("Confirm y/n")
-if confCreate != 'y':
-    sys.exit()
+# confCreate = input("Confirm y/n")
+# if confCreate != 'y':
+#     sys.exit()
 
 
 # if Automount options then see if we have free devices to Automount to!
