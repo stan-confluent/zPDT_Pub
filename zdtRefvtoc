@@ -59,8 +59,10 @@ if zdtPyApi.zdtRDR == 'y' or zdtPyApi.devRdrDir != '' or zdtPyApi.sshSub == 'y':
 
     if zdtPyApi.zosStat == 'up':
         #Verify ICKDSF output
-        if zdtPyApi.zdtPRT == 'y' or zdtPyApi.sshSub == 'y':
-            checkIckOut(zosVol)
+        # This if condition seems unnecessary
+        # if zdtPyApi.zdtPRT == 'y' or zdtPyApi.sshSub == 'y':
+        checkIckOut(zosVol)
+
 else:
     prRed("ERROR: automatic submission of ICKDSF REFVTOC JCL is not possible")
     prRed("       either AWSRDR device must be defined and available, or -ssh flag must be provided")
