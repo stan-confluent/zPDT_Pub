@@ -1,8 +1,8 @@
-# The Module contains functions used by zdtVcreate, zdtVresize and zdtmsg. 
+# The Module contains functions used by zdtVcreate, zdtVresize and zdtmsg.
 # It is not called directly.
-#  
-# 
-# 
+#
+#
+#
 #
 #
 
@@ -11,7 +11,7 @@ import sys
 import os
 import getpass
 import subprocess
-import uuid 
+import uuid
 import time
 import pwd
 import re
@@ -28,7 +28,7 @@ def prRed(prt):
 
 
 
-# You won't believe it is possible, but, this prints text in Cyan... no b.s.  
+# You won't believe it is possible, but, this prints text in Cyan... no b.s.
 def prCyan(prt):
     print("\033[96m {}\033[00m" .format(prt))
 
@@ -45,7 +45,7 @@ def stopJesTasks():
 
 # Used for stopZos to check if a task is still running or not
 def chkEndTask():
-    global zosIsUp 
+    global zosIsUp
     chkStat = str('d a,'+endTask)
     foundTask = 'no'
     zosIsUp = 'yes'
@@ -67,10 +67,10 @@ def getLoggedUser():
     global loggedUser
     loggedUser = pwd.getpwuid( os.getuid() ).pw_name
     try:
-        subprocess.check_output("awsstat") 
+        subprocess.check_output("awsstat")
     except subprocess.CalledProcessError as awserr:
         if b"1090 instance is not active" in awserr.output:
-            pass       
+            pass
     except:
         prRed("Warning: This Utility must be executed from the an account that has access")
         prRed("         to the z1090 binaries. This is typically the account used to start the zPDT Emulator")
@@ -120,7 +120,7 @@ def printHelp():
         print(" ")
         print("-d Vol Directory  Optional: zPDT Volume Directory, Default will be current working Directory")
         print("-m                Optional. Manual processing, No mounting of new Disk to zPDT, nor vary online to z/OS.")
-        print("-nodmap           Optional: Do NOT update DEVMAP file")          
+        print("-nodmap           Optional: Do NOT update DEVMAP file")
         print("-sms              Optional: Create an SMS volume. Default is Non-SMS")
         print("-s Volume_Size    Optional: New Disk Volume Size. (Acceptable 1,3,9,27,54) Default is 1")
         print("                            Default size is 1113 Cylinders (Mod 1)")
@@ -155,7 +155,7 @@ def printHelp():
 
 
 
-# Here were are starting to do some stuff .. ICKDSF is pretty powerful .. hopefully I didn't make any coding errors and happen 
+# Here were are starting to do some stuff .. ICKDSF is pretty powerful .. hopefully I didn't make any coding errors and happen
 # to wipe out your disk... if so .. sorry .. but you gave me the password.
 # This funcion will submit the below JCL to the 00C "hot" reader on z/OS. In ADCD (JES2) this is configured as RDR(1)
 def subIckdsfJcl(zosVol,zosStat):
@@ -177,7 +177,7 @@ def subIckdsfJcl(zosVol,zosStat):
             pwd2 = getpass.getpass(prompt='\033[91m RE-Enter Password for verification: \033[00m').upper()
             if pwd != pwd2:
                 prRed("Passwords do not match.. retry")
-    if zosStat == 'up' and sshSub != 'y':        
+    if zosStat == 'up' and sshSub != 'y':
         sendOprMsg('$tprt1,writer=awsprt,f=std,fcb=ex01,class=p,setup=nohalt', curLogFile, 1, 'n')
         try:
             if sys.version_info[0] >= 3 and sys.version_info[1] >= 5:
@@ -186,15 +186,15 @@ def subIckdsfJcl(zosVol,zosStat):
                 subprocess.call(["awsmount", "00E", "-u"],stderr=PIPE, stdout=PIPE)
         except:
             pass
-        
-                   
-    # Mount the awsprt device with the file to receive output 
+
+
+    # Mount the awsprt device with the file to receive output
     if zdtPRT == 'y' and sshSub != 'y':
         zdtJFile = prtDir+ickFile
         subprocess.call(["awsmount", "00E", "-m", zdtJFile])
         # Start printer
         sendOprMsg('$sprt1', curLogFile, 1, 'n')
-            
+
     # Create the ICKDSF REFVTOC JCL. Once written to the awsrdr directory JES2 should process automatically
     j = open(jclFile, "w+")
     j.write("//ZDTRVTOC JOB CLASS=A,MSGCLASS=H,REGION=0M,\n")
@@ -225,8 +225,8 @@ def subIckdsfJcl(zosVol,zosStat):
         j.write("//  PATHOPTS=(OWRONLY),\n")
         j.write("//  PATH='"+zdtJFile+"'\n")
     j.close()
-    
-    if sshSub != 'y':    
+
+    if sshSub != 'y':
         prCyan("ICKDSF JCL File "+ickFile+" written to awsrdr directory: "+devRdrDir)
         prCyan("If Devmap is configured to use this directory for the awsrdr Stanza then JES2 should process this thru RDR(1) device")
         prCyan("If z/OS is currently down, this job will be executed automatically next time z/OS successfully Starts")
@@ -237,11 +237,11 @@ def subIckdsfJcl(zosVol,zosStat):
             subCmd = "submit '"+jclFile+"'"
             # Make the Pipe for sending output
             subprocess.run(["ssh", inUid+"@"+zosIp, "mkfifo -m 755 "+zdtJFile])
-            # Transfer the JCL fiel over to z/OS 
+            # Transfer the JCL fiel over to z/OS
             subprocess.run(["scp", jclFile, inUid+"@"+zosIp+":"+jclFile])
             # Submit the JCL
             subprocess.run(["ssh", inUid+"@"+zosIp, subCmd])
-            # JCL will write to a pipe .. so we have to initiate a read 
+            # JCL will write to a pipe .. so we have to initiate a read
             prCyan("Waiting up to 40 seconds for JCL Execution to complete")
             catCmd = str("cat "+zdtJFile)
             # Open output file so we can obtain pipe read directly to file
@@ -253,7 +253,7 @@ def subIckdsfJcl(zosVol,zosStat):
             print(e)
             print(OSError)
             print(sys.exc_info()[0])
-            
+
     # Lets wait for the output from the ICKDSF Job so we can verify if REFVTOC was successful
     cl = 0
     fndOut = 'n'
@@ -282,13 +282,13 @@ def subIckdsfJcl(zosVol,zosStat):
 
 
 
-# Obtain Jes2 Output from zPDT awsprt device or from PIPE via SSH 
+# Obtain Jes2 Output from zPDT awsprt device or from PIPE via SSH
 def checkIckOut(expVol):
     try:
         volFnd = 'n'
         if sshSub == 'y':
             prCyan("Attempting to retrieve ICKDSF JCL output for verification")
-            
+
         jout = open(zdtJFile, "r")
         for lines in jout:
             if 'RVTOC VERIFY('+expVol+')' in lines:
@@ -298,7 +298,7 @@ def checkIckOut(expVol):
                 volFnd = 'v'
         if volFnd == 'y':
             prRed("ICKDSF REFVTOC was submitted successfully, however could not be verified or failed. Check output: "+zdtJFile)
-        if volFnd == 'n':    
+        if volFnd == 'n':
             prRed("ICKDSF REFVTOC was NOT submitted or output not found. Check ZDTRVTOC job completed on z/OS")
     except Exception as e:
         prRed("Error opening/reading output file, cannot verify ICKDSF REFVTOC status")
@@ -309,7 +309,7 @@ def checkIckOut(expVol):
 
 
 
-# Arguments, Arguments, Arguments .. I do loath confrontation, can't everyone just get along. 
+# Arguments, Arguments, Arguments .. I do loath confrontation, can't everyone just get along.
 def readArgs():
     if 'zdtVresize' in sys.argv[0]:
         pfunc = 'zdtVresize'
@@ -323,6 +323,10 @@ def readArgs():
     elif 'stopZos' in sys.argv[0]:
         pfunc = 'stopZos'
         arglist = ['-c','-z','-t','-awsstop','-reipl','-noverify','--help']
+    elif 'zdtRefvtoc' in sys.argv[0]:
+        pfunc = 'zdtRefvtoc'
+        # -v for volser; -ssh,-ipaddr,-port for ssh access; -u for userid to submit JCL; -noverify to skip prompts
+        arglist = ['-v','-ssh','-ipaddr','-port','-u','--noverify','--help']
     else:
         pfunc = 'zdtmsg'
         arglist = ['-w','--help']
@@ -364,7 +368,7 @@ def readArgs():
         zosSSHPort = 22
         #volDir = '/home/ibmsys1/zdt/volumes/'
         volDir = os.getcwd()+'/'
-       
+
         while x < arg_len:
             x += 1
             if sys.argv[x] not in arglist:
@@ -455,25 +459,25 @@ def readArgs():
                 valVol = re.match(r"^[A-Z0-9@#$']",volSer)
                 if valVol == None:
                     prCyan("If volume name contains a $, place volume in single quotes")
-                    raise ValueError('Volume contains invalid characters/symbols.Check Case (upper only). May contain only 0-9, A-Z, @,#,or $') 
+                    raise ValueError('Volume contains invalid characters/symbols.Check Case (upper only). May contain only 0-9, A-Z, @,#,or $')
 
         if 'stopZos' in sys.argv[0] and reipl == 'Y' and awsstop == 'Y':
-            raise ValueError('-awsstop and -reipl are mutually exclusive') 
-           
+            raise ValueError('-awsstop and -reipl are mutually exclusive')
+
         #if not os.path.exists(volDir) and pfunc != 'zdtmsg':
         if not os.path.exists(volDir+inVol) and pfunc != 'zdtmsg' and pfunc != 'zdtVcreate':
-            raise ValueError('Volume not found in current working directory or directory specified, switch to correct directory or use appropriate -d option')       
+            raise ValueError('Volume not found in current working directory or directory specified, switch to correct directory or use appropriate -d option')
         if inVol == '' and pfunc == 'resize':
-            raise ValueError('Required Input Disk File parameter missing .. -i xxxxxxx')        
+            raise ValueError('Required Input Disk File parameter missing .. -i xxxxxxx')
         if volSer == '' and pfunc == 'create':
-            raise ValueError('Required Volume parameter missing .. -v xxxxxxx')       
+            raise ValueError('Required Volume parameter missing .. -v xxxxxxx')
         if sshSub == 'y':
             try:
                 sTest = socket.socket()
                 sTest.settimeout(10)
                 sTest.connect((zosIp, zosSSHPort))
             except Exception as socke:
-                print("Error connecting to ssh Port: "+str(zosSSHPort)+" Cannot continue with -ssh option")  
+                print("Error connecting to ssh Port: "+str(zosSSHPort)+" Cannot continue with -ssh option")
                 print("Verify SSH is active on z/OS and you are specifying the correct port. Use -port option is necessary")
                 print(OSError)
                 print(socke)
@@ -511,35 +515,35 @@ def getIplInfo():
             shutCmd = '%NETV SHUTSYS'
         elif "USED LOADCS IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTCS'
-        elif "USED LOADAL IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADAL IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTALL'
-        elif "USED LOADDB IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADDB IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTDB'
-        elif "USED LOADCI IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADCI IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTCI'
-        elif "USED LOADIM IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADIM IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTIM'
-        elif "USED LOADIZ IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADIZ IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTIZ'
-        elif "USED LOADWA IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADWA IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTWA'
-        elif "USED LOADDC IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADDC IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTDC'
-        elif "USED LOADDW IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADDW IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTALL'
-        elif "USED LOADWS IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADWS IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTCS'
-        elif "USED LOAD00 IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOAD00 IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUT00'
-        elif "USED LOADZE IN SYS1.IPLPARM" in trapMsg:  
+        elif "USED LOADZE IN SYS1.IPLPARM" in trapMsg:
             shutCmd = 'S SHUTZE'
-        else: 
+        else:
             prRed("Unable to shutdown this z/OS instance.. shutdown command unknown")
             sys.exit()
     for lines in trapMsg.split("OPRMSG:"):
         if "USED LOAD" in lines:
             get_LD_Parm = lines.split()[1]
-            LD_Parm = get_LD_Parm[4:7] 
+            LD_Parm = get_LD_Parm[4:7]
         if "IODF DEVICE: ORIGINAL" in lines:
             get_IODF_Dev = lines.split()[2]
             IODF_Dev = get_IODF_Dev[10:14]
@@ -551,7 +555,7 @@ def getIplInfo():
     prRed("IPL Device:  "+IPL_Dev)
     prRed("IODF Device: "+IODF_Dev)
 
-#Make CKD File for zdtVcreate. Ensure you are not trying to create something that already exists. 
+#Make CKD File for zdtVcreate. Ensure you are not trying to create something that already exists.
 def makeCkdVol(volSer, newSize, progPath):
     if os.path.exists(volDir+volSer):
                 prRed("Severe ERROR: File "+volDir+volSer+" Already exists.. program aborting")
@@ -566,7 +570,7 @@ def makeCkdVol(volSer, newSize, progPath):
 
 
 
-# This function runs the pdsUtil zPDT utility, searches for a string and if desired replaces it with new value 
+# This function runs the pdsUtil zPDT utility, searches for a string and if desired replaces it with new value
 def pdsUfile(volDir, volSer, pdsName, memName, searchStr, replStr):
     lastrc = 0
     try:
@@ -578,7 +582,7 @@ def pdsUfile(volDir, volSer, pdsName, memName, searchStr, replStr):
             pdsExtr = subprocess.run(["pdsUtil", volDir+volSer, pdsName+"/"+memName, "/tmp/"+memName, "--extract"],capture_output=True)
             if pdsExtr.stderr != b'':
                 print(pdsExtr.stderr)
-                print("Return Code: "+str(pdsExtr.returncode)) #typically RC 40 (no member) or 20 (no pds) here 
+                print("Return Code: "+str(pdsExtr.returncode)) #typically RC 40 (no member) or 20 (no pds) here
                 sys.exit(pdsExtr.returncode)
                 #raise ValueError(pdsExtr.stderr)
             else:
@@ -636,7 +640,7 @@ def pdsUfile(volDir, volSer, pdsName, memName, searchStr, replStr):
         elif foundStr == 'yes' and replStr == 'null':
             if strFnd > 1:
                 prRed("Warning .. multiple lines found matching string: "+searchStr)
-            print("Search String was found: "+str(strFnd)+" Times.") 
+            print("Search String was found: "+str(strFnd)+" Times.")
             print("Replacement String was not specified so no updates/replacements performed.")
             lastrc = 14
         elif foundStr == '':
@@ -648,7 +652,7 @@ def pdsUfile(volDir, volSer, pdsName, memName, searchStr, replStr):
     sys.exit(lastrc)
 
 
-# Check if zPDT Emulator is running. If it is not then this isn't a failure but some automagic turns to manual labor. 
+# Check if zPDT Emulator is running. If it is not then this isn't a failure but some automagic turns to manual labor.
 def checkZpdt():
     global zdtStat, zosStat, zdtConf, zdtRDR, zdtPRT
     zdtConf = ''
@@ -659,7 +663,7 @@ def checkZpdt():
         zdt_stat = subprocess.check_output("awsstat")
         zdtStat = 'up'
         for line in zdt_stat.splitlines():
-            if b'Config file' in line: 
+            if b'Config file' in line:
                 zdtConf = line.split()[2]
                 zdtConf = zdtConf.strip(b',')
             if b'AWSRDR' in line:
@@ -684,11 +688,11 @@ def checkZpdt():
 
 
 
-# find out if there are free devices in devmap we can mount new files to. 
+# find out if there are free devices in devmap we can mount new files to.
 def findFreeDev():
     #Obtain list of AWSCKD Devices.
     global freeDevList
-    freeDevList = [] 
+    freeDevList = []
     zdt_Devlist = subprocess.check_output("awsstat")
     for line in zdt_Devlist.splitlines():
         devno = line.split()[0]
@@ -762,7 +766,7 @@ def updateDevmap(device, conFile, diskDir, diskFile):
                 n.write(line)
         c.close()
         n.close()
-        subprocess.call(["mv", conFile, bkFile]) 
+        subprocess.call(["mv", conFile, bkFile])
         subprocess.call(["mv", newFile, conFile])
         prCyan("Devmap Updated!. Note: Original Devmap file retained as: "+conFile.decode()+"_orig")
     except:
@@ -839,7 +843,7 @@ def sendOprMsg(oprStr, logFile, slpTime, prtOpt):
     if prtOpt == 'y' or prtOpt == 't':
         oprmsgs = subprocess.check_output(["tail", "-n", "500", logFile])
         for lines in oprmsgs.splitlines():
-            if b'zdtmsg-'+nowTme.encode() in lines: 
+            if b'zdtmsg-'+nowTme.encode() in lines:
                 prFlag1 = 'y'
             if oprStr.encode() in lines and prFlag1 == 'y' :
                 prFlag2 = 'y'
