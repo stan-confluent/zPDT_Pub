@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+#
+# Just submit JCL to z/OS to execute ICKDSF REFVTOC on the volume (if z/OS is up)
+# This is helpful when you've ran zdtVresize while z/OS was shut down,
+# you restart it and now can simply run zdtRefvtoc on that volume you've just resized.
+#
+# for help on required input run without any arguments or --help
+
+import zdtPyApi
+from zdtPyApi import *
+
+# Read Arguments
+readArgs()
+
+# if -noverify is provided, skip all verification steps
+if zdtPyApi.noverify == 'N':
+
+    print(" ")
+    prRed("***** WARNING - READ CAREFULLY *****")
+    print(" ")
+    prRed("Use this utility at your own Risk! This utility performs the following actions:")
+    prRed("- Rename (Backup) original Disk file (with suffix _bkup")
+    prRed("- Create a NEW volume file at the requested enlarged size")
+    prRed("- Prepend original volume data to new volume")
+    prRed("In order to resize a volume, the volume MUST be taken OFFLINE from z/OS. This utility will")
+    prRed("attempt to do this. During execution you will requested to verify that device comes offline")
+    print(" ")
+
+    if hasattr(__builtins__, 'raw_input'):
+        input=raw_input  # @UndefinedVariable
+    verify = input("\033[96m Press y to Accept the Risk and continue, or anything else to abort\033[00m ").upper()
+    print(" ")
+    if verify != 'Y':
+        prCyan('Aborting at your request')
+        sys.exit(1)
+
+
+#Lets find out who is logged on and executing this
+getLoggedUser()
+
+zosVol = zdtPyApi.volSer
+
+
+# Check if zPDT Emulator is running
+checkZpdt()
+
+if zdtPyApi.zdtStat != 'up':
+    prRed("ERROR: zPDT is not up, status is: "+zdtPyApi.zdtStat)
+    prRed("Aborting.")
+    sys.exit(1)
+
+prCyan("z/OS Status: "+zdtPyApi.zosStat+"      zPDT Status: "+zdtPyApi.zdtStat)
+print(" ")
+
+# Obtain Devmap Info
+findDmInfo(zdtPyApi.loggedUser, zdtPyApi.zdtConf)
+
+
+
+if zdtPyApi.zdtRDR == 'y' or zdtPyApi.devRdrDir != '' or zdtPyApi.sshSub == 'y':
+    if zdtPyApi.sshSub != 'y':
+        prCyan("Submitting ICKDSF REFVTOC JCL to z/OS via awsrdr: "+zdtPyApi.devRdrDir+" for volume: "+zosVol+" Password must be provided if prompted")
+    else:
+        prCyan("Submitting ICKDSF REVTOC JCL to z/OS via SSH")
+
+    #submit ICKDSF job and obtain output
+    subIckdsfJcl(zosVol,zdtPyApi.zosStat)
+
+    if zdtPyApi.zosStat == 'up':
+        #Verify ICKDSF output
+        if zdtPyApi.zdtPRT == 'y' or zdtPyApi.sshSub == 'y':
+            checkIckOut(zosVol)
+else:
+    prRed("ERROR: automatic submission of ICKDSF REFVTOC JCL is not possible")
+    prRed("       either AWSRDR device must be defined and available, or -ssh flag must be provided")
+    prRed("       (along with corresponding options)")
+    prRed("Aborting!")
