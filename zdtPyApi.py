@@ -172,6 +172,7 @@ def subIckdsfJcl(zosVol,zosStat):
     ickFile = ickUid + str('.txt')
     prtFile = ickUid + str('_out.txt')
     if sshSub != 'y':
+        print('devRdrDir: ' + devRdrDir)
         jclFile = devRdrDir+ickFile
     else:
         jclFile = str('/tmp/')+ickFile
