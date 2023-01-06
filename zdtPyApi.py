@@ -135,15 +135,22 @@ def printHelp():
         print("   zdtVcreate -v TEST02 -m -s 27         ; Just create the new file, no automatic mounting etc")
     elif 'zdtpdsu' in sys.argv[0]:
         prCyan("** zdtpdsu Input Requirements: **")
-        print("Run this utility with linux user that starts zPDT and IPLs z/OS. zdtpdsu is really just a 'wrapper' for the pdsUtil zPDT command")
         print(" ")
-        print("-d Volume Directory           Optional: will default to current directory")
         print("-v Volume Name                Required: Volume containing the PDS to be updated")
-        print("-p PDS Name                   Required: PDS Name containing the Member to be updated")
         print("-q Member Name                Required: Member Name to be updated.")
         print("-r Search String              Optional: Quoted Search String to be replaced by Replacement String.")
         print("-x Replacement String         Optional: Quoted Replacement string which will replace Search String.")
-
+    elif 'zdtRefvtoc' in sys.argv[0]:
+        prCyan("** zdtRefvtoc Input Requirements: **")
+        print("")
+        print("-v Volser           Required: z/OS Volser Name to run ICKDSF REFVTOC for")
+        print("-u userid           Optional: z/OS Userid for submitting JCL. Default is IBMUSER")
+        print("-ssh                Optional: Use SSH to submit JCL and retreive output from z/OS instead of JES2.")
+        print("                              Using an SSH key between Linux and z/OS is recommended. It will still work")
+        print("                              without a key, however, you will be prompted several times for password.")
+        print("                              Default option is to use awsrdr and awsprt stanzas for JCL submission/output retrieval")
+        print("-ipaddr x.x.x.x     Optional: Valid only when using -ssh option. Use to specify z/OS host IP Address if not default 10.1.1.2")
+        print("-port               Optional: When using -ssh, specify alternate z/OS SSH Port, if z/OS is not using default port 22")
     else:
         prCyan("** zdtmsg Input Requirements: **")
         print("-w       Optional: time to wait for messages, default is .5 seconds, supported with Python 3.3 or greater")
