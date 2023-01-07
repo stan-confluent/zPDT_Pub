@@ -321,7 +321,7 @@ def checkIckOut(expVol):
 def readArgs():
     if 'zdtVresize' in sys.argv[0]:
         pfunc = 'zdtVresize'
-        arglist = ['-i','-s','-d','-v','-m','-u','--help','-ssh','-ipaddr','-port']
+        arglist = ['-i','-s','-d','-v','-m','-u','--help','-ssh','-ipaddr','-port','-noverify']
     elif 'zdtVcreate' in sys.argv[0]:
         pfunc = 'zdtVcreate'
         arglist = ['-s','-v','-d','-m','-nodmap','-sms','--help']
