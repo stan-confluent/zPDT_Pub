@@ -166,7 +166,7 @@ def printHelp():
 # to wipe out your disk... if so .. sorry .. but you gave me the password.
 # This funcion will submit the below JCL to the 00C "hot" reader on z/OS. In ADCD (JES2) this is configured as RDR(1)
 def subIckdsfJcl(zosVol,zosStat):
-    global zdtJFile, fndOut, jclFile, prtFile
+    global zdtJFile, fndOut, jclFile, prtFile, noverify, password
     upzosVol = zosVol.upper()
     ickUid = str(uuid.uuid4())
     ickFile = ickUid + str('.txt')
@@ -180,11 +180,17 @@ def subIckdsfJcl(zosVol,zosStat):
     pwd = '1'
     pwd2 = '2'
     if sshSub != 'y':
-        while (pwd != pwd2):
-            pwd = getpass.getpass(prompt='\033[91m Enter '+inUid+' TSO ID Password, it will be hidden from display:\033[00m ').upper()
-            pwd2 = getpass.getpass(prompt='\033[91m RE-Enter Password for verification: \033[00m').upper()
-            if pwd != pwd2:
-                prRed("Passwords do not match.. retry")
+        if noverify == 'Y':
+            pwd = password
+            if not pwd:
+                prRed("Password is missing")
+                sys.exit(1)
+        else:
+            while (pwd != pwd2):
+                pwd = getpass.getpass(prompt='\033[91m Enter '+inUid+' TSO ID Password, it will be hidden from display:\033[00m ').upper()
+                pwd2 = getpass.getpass(prompt='\033[91m RE-Enter Password for verification: \033[00m').upper()
+                if pwd != pwd2:
+                    prRed("Passwords do not match.. retry")
     if zosStat == 'up' and sshSub != 'y':
         sendOprMsg('$tprt1,writer=awsprt,f=std,fcb=ex01,class=p,setup=nohalt', curLogFile, 1, 'n')
         try:
@@ -321,7 +327,7 @@ def checkIckOut(expVol):
 def readArgs():
     if 'zdtVresize' in sys.argv[0]:
         pfunc = 'zdtVresize'
-        arglist = ['-i','-s','-d','-v','-m','-u','--help','-ssh','-ipaddr','-port','-noverify']
+        arglist = ['-i','-s','-d','-v','-m','-u','--help','-ssh','-ipaddr','-port','-noverify','-password']
     elif 'zdtVcreate' in sys.argv[0]:
         pfunc = 'zdtVcreate'
         arglist = ['-s','-v','-d','-m','-nodmap','-sms','--help']
@@ -334,7 +340,7 @@ def readArgs():
     elif 'zdtRefvtoc' in sys.argv[0]:
         pfunc = 'zdtRefvtoc'
         # -v for volser; -ssh,-ipaddr,-port for ssh access; -u for userid to submit JCL; -noverify to skip prompts
-        arglist = ['-v','-ssh','-ipaddr','-port','-u','--noverify','--help']
+        arglist = ['-v','-ssh','-ipaddr','-port','-u','--noverify','--help','-password']
     else:
         pfunc = 'zdtmsg'
         arglist = ['-w','--help']
@@ -343,7 +349,7 @@ def readArgs():
         printHelp()
         sys.exit()
     size_list = ['1','3','9','27','54']
-    global stopTime, shutCmd, endTask, progPath, subJcl, newSize, volSer, smsFlag, inVol, autoMnt, inUid, volDir, upDmap, slpTime, sshSub, zosIp, awsstop, noverify, pdsName, memName, searchStr, replStr, reipl
+    global stopTime, shutCmd, endTask, progPath, subJcl, newSize, volSer, smsFlag, inVol, autoMnt, inUid, volDir, upDmap, slpTime, sshSub, zosIp, awsstop, noverify, pdsName, memName, searchStr, replStr, reipl, password
     progPath = os.path.realpath(__file__).strip('zdtPyApi.py')
     progPath = os.path.realpath(__file__).strip('zdtPyApi.pyc')
     try:
@@ -376,6 +382,7 @@ def readArgs():
         zosSSHPort = 22
         #volDir = '/home/ibmsys1/zdt/volumes/'
         volDir = os.getcwd()+'/'
+        password = None
 
         while x < arg_len:
             x += 1
@@ -468,6 +475,9 @@ def readArgs():
                 if valVol == None:
                     prCyan("If volume name contains a $, place volume in single quotes")
                     raise ValueError('Volume contains invalid characters/symbols.Check Case (upper only). May contain only 0-9, A-Z, @,#,or $')
+            elif sys.argv[x] == '-password':
+                password = sys.argv[x+1]
+                x += 1
 
         if 'stopZos' in sys.argv[0] and reipl == 'Y' and awsstop == 'Y':
             raise ValueError('-awsstop and -reipl are mutually exclusive')
