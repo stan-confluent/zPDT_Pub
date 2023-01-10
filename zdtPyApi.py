@@ -476,7 +476,7 @@ def readArgs():
                     prCyan("If volume name contains a $, place volume in single quotes")
                     raise ValueError('Volume contains invalid characters/symbols.Check Case (upper only). May contain only 0-9, A-Z, @,#,or $')
             elif sys.argv[x] == '-password':
-                password = sys.argv[x+1]
+                password = sys.argv[x+1].strip().upper()
                 x += 1
 
         if 'stopZos' in sys.argv[0] and reipl == 'Y' and awsstop == 'Y':
