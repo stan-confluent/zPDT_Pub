@@ -72,10 +72,10 @@ else:
             print('-noverify passed, skip prompting user')
         # sendOprMsg(zdtPyApi.shutCmd, zdtPyApi.curLogFile, 1, 't')
         stopFlag = 'N'
-        while totTime < zdtPyApi.stopTime:
-            print('sleeping')
-            time.sleep(intTime)
-            totTime += intTime
+        # while totTime < zdtPyApi.stopTime:
+        #     print('sleeping')
+        #     time.sleep(intTime)
+        #     totTime += intTime
             # if totTime > zdtPyApi.stopTime - (intTime * 3) and stopFlag != 'Y':
             #     prRed(zdtPyApi.stopTime)
             #     prRed(totTime)
