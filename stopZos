@@ -63,18 +63,24 @@ else:
                 sys.exit()
             else:
                 pass
+        else:
+            sys.stdout.flush()
         sendOprMsg(zdtPyApi.shutCmd, zdtPyApi.curLogFile, 1, 't')
         stopFlag = 'N'
         while totTime < zdtPyApi.stopTime:
             time.sleep(intTime)
             totTime += intTime
+            print(f"slept for {intTime} for total of {totTime}")
+            sys.stdout.flush()
             if totTime > zdtPyApi.stopTime - (intTime * 3) and stopFlag != 'Y':
                 prRed(zdtPyApi.stopTime)
                 prRed(totTime)
                 prRed('Timeout is approaching, attempting cancel of remaining JES2 dependent tasks')
                 stopJesTasks()
                 stopFlag = 'Y'
+                sys.stdout.flush()
             chkEndTask()
+            sys.stdout.flush()
             if zdtPyApi.zosIsUp == 'no':
                 totTime = zdtPyApi.stopTime
                 prCyan("z/OS now considered down, task "+zdtPyApi.endTask+" has ended")
