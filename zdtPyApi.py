@@ -340,7 +340,7 @@ def readArgs():
     elif 'zdtRefvtoc' in sys.argv[0]:
         pfunc = 'zdtRefvtoc'
         # -v for volser; -ssh,-ipaddr,-port for ssh access; -u for userid to submit JCL; -noverify to skip prompts
-        arglist = ['-v','-ssh','-ipaddr','-port','-u','--noverify','--help','-password']
+        arglist = ['-v','-ssh','-ipaddr','-port','-u','-noverify','--help','-password']
     else:
         pfunc = 'zdtmsg'
         arglist = ['-w','--help']
