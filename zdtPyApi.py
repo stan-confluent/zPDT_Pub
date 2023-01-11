@@ -42,6 +42,7 @@ def stopJesTasks():
             print("Cancelling Task: "+tasknm)
             cantask = str('CANCEL '+tasknm)
             sendOprMsg(cantask, curLogFile, 1, 't')
+            sys.stdout.flush()
 
 # Used for stopZos to check if a task is still running or not
 def chkEndTask():
