@@ -12,6 +12,7 @@
 
 
 # Functions are in zdtPyApi
+print('loading')
 import zdtPyApi
 from zdtPyApi import *
 
@@ -58,9 +59,9 @@ else:
         prCyan("stopZos will timeout after: "+str(zdtPyApi.stopTime)+" seconds")
         if zdtPyApi.awsstop == 'Y':
             prRed("stopZos will execute zPDT awsstop command either after timeout or after z/OS shutdown completed")
-        if hasattr(__builtins__, 'raw_input'):
-            input=raw_input  # @UndefinedVariable
         if zdtPyApi.noverify == 'N':
+            if hasattr(__builtins__, 'raw_input'):
+                input=raw_input  # @UndefinedVariable
             verify = input("\033[96m Press y to proceed with z/OS Shutdown, or anything else to abort\033[00m ").upper()
             print(" ")
             if verify != 'Y':
