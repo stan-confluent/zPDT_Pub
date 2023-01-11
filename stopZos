@@ -67,6 +67,7 @@ else:
             sys.stdout.flush()
         sendOprMsg(zdtPyApi.shutCmd, zdtPyApi.curLogFile, 1, 't')
         stopFlag = 'N'
+        sys.stdout.flush()
         while totTime < zdtPyApi.stopTime:
             time.sleep(intTime)
             totTime += intTime
