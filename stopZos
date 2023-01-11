@@ -52,12 +52,10 @@ else:
     if zdtPyApi.zosIsUp == 'yes':
         getIplInfo()
 
-        # prCyan("stopZos using task "+zdtPyApi.endTask+" to determine z/OS status")
-        # prCyan("stopZos will shutdown z/OS using command: "+zdtPyApi.shutCmd)
-        # prCyan("stopZos will timeout after: "+str(zdtPyApi.stopTime)+" seconds")
-        print("stopZos using task "+zdtPyApi.endTask+" to determine z/OS status")
-        print("stopZos will shutdown z/OS using command: "+zdtPyApi.shutCmd)
-        print("stopZos will timeout after: "+str(zdtPyApi.stopTime)+" seconds")
+        prCyan("stopZos using task "+zdtPyApi.endTask+" to determine z/OS status")
+        prCyan("stopZos will shutdown z/OS using command: "+zdtPyApi.shutCmd)
+        prCyan("stopZos will timeout after: "+str(zdtPyApi.stopTime)+" seconds")
+
         if zdtPyApi.awsstop == 'Y':
             prRed("stopZos will execute zPDT awsstop command either after timeout or after z/OS shutdown completed")
         if zdtPyApi.noverify == 'N':
