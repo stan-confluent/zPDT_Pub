@@ -840,6 +840,7 @@ def findDmInfo(loggedUser, zdtConf):
 
 # send commands to zPDT and retrieve responses
 def sendOprMsg(oprStr, logFile, slpTime, prtOpt):
+    print(f'Sending oprmsg: {oprStr}')
     global trapMsg
     nowTme = strftime("%H:%M:%S",gmtime())
     conOn = 'v cn(*),act'
